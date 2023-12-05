@@ -3,12 +3,38 @@ const auth = require("../middleware/auth.middleware");
 const router = new express.Router();
 const Task = require("../models/task");
 
+// GET /tasks?completed=true
+// GET /tasks?limit=2&pageNo=3
+// GET /tasks?sortBy=createdAt:desc
+// GET /tasks?sortBy=completed:desc
 router.get("/tasks", auth, async (req, res) => {
   try {
     // const tasks = await Task.find({ owner: req.user._id });
     // res.send({ status: 200, message: "fetched successfully", result: tasks });
+    const match = {};
+    const sort = {};
+    if (req.query.completed) {
+      match.completed = req.query.completed === "true";
+    }
 
-    await req.user.populate("tasks").execPopulate();
+    if (req.query.sortBy) {
+      const sortType = req.query.sortBy.split(":");
+      //-1 is for descending , 1 for ascending
+      // we are sorting whatever the type of sort key user is sending
+      sort[sortType[0]] = sortType[1] === "desc" ? -1 : 1;
+    }
+
+    await req.user
+      .populate({
+        path: "tasks",
+        match,
+        options: {
+          limit: parseInt(req.query.limit),
+          skip: parseInt(req.query.pageNo),
+          sort,
+        },
+      })
+      .execPopulate();
     res.send({
       status: 200,
       message: "fetched successfully",

@@ -4,46 +4,52 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Task = require("./task");
 
-const userSchema = mongoose.Schema({
-  name: {
-    type: String,
-    trim: true,
-  },
-  age: {
-    type: Number,
-    default: 0,
-  },
-  email: {
-    type: String,
-    unique: true,
-    required: true,
-    trim: true,
-    validate(value) {
-      if (!validator.isEmail(value)) {
-        throw new Error("please enter valid email");
-      }
+const userSchema = mongoose.Schema(
+  {
+    name: {
+      type: String,
+      trim: true,
     },
-  },
-  password: {
-    type: String,
-    required: true,
-    trim: true,
-    minLength: 7,
-    validate(value) {
-      if (value.includes("password")) {
-        throw new Error("password should not contain password keyword");
-      }
+    age: {
+      type: Number,
+      default: 0,
     },
-  },
-  tokens: [
-    {
-      token: {
-        type: String,
-        required: true,
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+      trim: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("please enter valid email");
+        }
       },
     },
-  ],
-});
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+      minLength: 7,
+      validate(value) {
+        if (value.includes("password")) {
+          throw new Error("password should not contain password keyword");
+        }
+      },
+    },
+
+    tokens: [
+      {
+        token: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
 
 // instead storing in DB, we are directly giving reference to mongoose
 userSchema.virtual("tasks", {
