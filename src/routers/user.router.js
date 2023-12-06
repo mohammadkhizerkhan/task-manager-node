@@ -2,6 +2,31 @@ const express = require("express");
 const router = new express.Router();
 const User = require("../models/user");
 const auth = require("../middleware/auth.middleware");
+const multer = require("multer");
+
+const avatar = multer({
+  dest: "images",
+  limits: {
+    fileSize: 1000000,
+  },
+  fileFilter(req, file, callback) {
+    if (!file.originalname.match(/\.(jpeg|jpg|png)$/)) {
+      callback(new Error("invalid file uploaded"));
+    }
+    callback(undefined, true);
+  },
+});
+
+router.post(
+  "/users/self/avatar",
+  avatar.single("avatar"),
+  (req, res) => {
+    res.send();
+  },
+  (error, req, res, next) => {
+    res.status(400).send({error:error.message});
+  }
+);
 
 router.post("/users", async (req, res) => {
   const user = new User(req.body);
@@ -89,7 +114,7 @@ router.patch("/users/self", auth, async (req, res) => {
   try {
     const user = req.user;
     updateFields.forEach((field) => (user[field] = body[field]));
-    
+
     await user.save();
     res.send({ status: 200, message: "updated successfully", result: user });
   } catch (error) {
