@@ -36,7 +36,6 @@ const userSchema = mongoose.Schema(
         }
       },
     },
-
     tokens: [
       {
         token: {
@@ -45,6 +44,9 @@ const userSchema = mongoose.Schema(
         },
       },
     ],
+    avatar: {
+      type: Buffer,
+    },
   },
   {
     timestamps: true,
@@ -64,6 +66,7 @@ userSchema.methods.toJSON = function () {
 
   delete cloneUser.tokens;
   delete cloneUser.password;
+  delete cloneUser.avatar;
 
   return cloneUser;
 };

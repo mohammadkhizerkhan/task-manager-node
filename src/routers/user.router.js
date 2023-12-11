@@ -3,9 +3,9 @@ const router = new express.Router();
 const User = require("../models/user");
 const auth = require("../middleware/auth.middleware");
 const multer = require("multer");
+// const sharp = require("sharp");
 
 const avatar = multer({
-  dest: "images",
   limits: {
     fileSize: 1000000,
   },
@@ -19,12 +19,48 @@ const avatar = multer({
 
 router.post(
   "/users/self/avatar",
+  auth,
   avatar.single("avatar"),
-  (req, res) => {
-    res.send();
+  async (req, res) => {
+    // const buffer = await sharp(req.file.buffer)
+    //   .resize({ width: 250, height: 250 })
+    //   .toFormat("jpg")
+    //   .toBuffer();
+    req.user.avatar = req.file.buffer;
+    await req.user.save();
+    res.status(200).send({ message: "avatar saved" });
   },
   (error, req, res, next) => {
-    res.status(400).send({error:error.message});
+    res.status(400).send({ error: error.message });
+  }
+);
+
+router.delete(
+  "/users/self/avatar",
+  auth,
+  avatar.single("avatar"),
+  async (req, res) => {
+    req.user.avatar = undefined;
+    await req.user.save();
+    res.status(200).send({ message: "avatar deleted" });
+  },
+  (error, req, res, next) => {
+    res.status(400).send({ error: error.message });
+  }
+);
+
+router.get(
+  "/users/:id/avatar",
+  async (req, res) => {
+    const user = await User.findById(req.params.id);
+    if (!user || !user.avatar) {
+      throw new Error("couldn't able to find user or avatar");
+    }
+    res.header("Content-Type", "image/jpg");
+    res.status(200).send(user.avatar);
+  },
+  (error, req, res, next) => {
+    res.status(400).send({ error: error.message });
   }
 );
 
