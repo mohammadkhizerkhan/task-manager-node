@@ -73,7 +73,7 @@ userSchema.methods.toJSON = function () {
 
 userSchema.methods.generateJWT = async function () {
   const user = this;
-  const token = jwt.sign({ _id: user._id.toString() }, "this is secret key");
+  const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
   user.tokens = user.tokens.concat({ token });
   await user.save();
   return token;
